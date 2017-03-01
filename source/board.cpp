@@ -127,7 +127,7 @@ int Board::getWinner() {
 }
 
 
-int Board::print() {
+int Board::print(bool error) {
 	//create an array of output options based upon the number in Board[y][x].
 	array<string, 3> output;
 	output[0] = "   |";
@@ -151,10 +151,15 @@ int Board::print() {
 		if (y + 1 < BOARD_HEIGHT)
 			cout << "           |";
 		else {
-			if (winner != 0)
-				cout << "           !!      PLAYER " << winner << " WINS      !!";
-			else
+			if (winner != 0) {
+				cout << "           !! '+.= PLAYER " << winner << " WINS =.+' !!";
+			}
+			else if (error) {
+				cout << "           !! INVALID MOVE, TRY AGAIN !!";
+			}
+			else {
 				cout << "           ||                         ||";
+			}
 
 			cout << "      Total Moves: " <<  moves << endl;
 		}

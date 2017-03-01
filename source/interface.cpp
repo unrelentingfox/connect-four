@@ -10,16 +10,18 @@ int Interface::start() {
 	board = new Board();
 	char input;
 	int player = 0;
+	bool error = false;
 
 	while (input != 'q') {
 		cout << "=------------------------------------------------------------=\n";
 		cout << "| Use the numbers (1-7) to drop a peice in one of the slots. |\n";
 		cout << "|                  ___________________                       |\n";
-		cout << "| Quit (q)        | CURRENT PLAYER: " << player+1 << " |        Reset Game(r) |\n";
+		cout << "| Quit (q)        | CURRENT PLAYER: " << player + 1 << " |        Reset Game(r) |\n";
 		cout << "=------------------------------------------------------------=\n";
-		board->print();
+		board->print(error);
+		error = false;
 		cout << "=------------------------------------------------------------***\n";
-		cout << "PLAYER " << player+1 << ": ";
+		cout << "PLAYER " << player + 1 << ": ";
 		cin >> input;
 
 		switch (input) {
@@ -32,35 +34,41 @@ int Interface::start() {
 			break;
 
 		case '1':
-			board->move(player+1, 0);
+			if (!board->move(player + 1, 0)) error = true;
+
 			break;
 
 		case '2':
-			board->move(player+1, 1);
+			if (!board->move(player + 1, 1)) error = true;
 			break;
 
 		case '3':
-			board->move(player+1, 2);
+			if (!board->move(player + 1, 2)) error = true;
 			break;
 
 		case '4':
-			board->move(player+1, 3);
+			if (!board->move(player + 1, 3)) error = true;
 			break;
 
 		case '5':
-			board->move(player+1, 4);
+			if (!board->move(player + 1, 4)) error = true;
 			break;
 
 		case '6':
-			board->move(player+1, 5);
+			if (!board->move(player + 1, 5)) error = true;
 			break;
 
 		case '7':
-			board->move(player+1, 6);
+			if (!board->move(player + 1, 6)) error = true;
+			break;
+
+		default:
+			error = true;
 			break;
 		}
 
 		//Switch players
-		player ^= 1;
+		if (error == false)
+			player ^= 1;
 	}
 }

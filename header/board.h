@@ -39,7 +39,7 @@ public:
 	Board ();
 	int move(int player, int slot);
 	int getWinner();
-	int print();
+	int print(bool error = false);
 
 };
 
