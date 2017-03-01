@@ -12,7 +12,7 @@ SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 CFLAGS := -g -std=c++11
 LIB := 
-INC := -I headers
+INC := -I header
 
 $(TARGET): $(OBJECTS)
 	@echo " Linking..."
