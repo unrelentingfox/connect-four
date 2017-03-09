@@ -13,6 +13,7 @@ int Interface::start() {
 	bool error = false;
 
 	while (input != 'q') {
+		cout << endl << endl;
 		cout << "=------------------------------------------------------------=\n";
 		cout << "| Use the numbers (1-7) to drop a peice in one of the slots. |\n";
 		cout << "|                  ___________________                       |\n";

@@ -82,6 +82,11 @@ int Board::checkPieceForWin(int x, int y) {
 
 	int loop = 1;
 
+	//This algorithm only counts away from the given index in one direction
+	//So if there is a set of peices like XX X and you added and X in the middle
+	//making it XXXX then it would count 2 on the left and not notice the win
+	//then it would count 1 on the right and not notice the win. This needs to be fixed.
+	//
 	for (int i = 0; i < DIRECTIONS; i++) {
 		// cout << "starting checking \n";
 		yt = y;
@@ -131,11 +136,11 @@ int Board::print(bool error) {
 	//create an array of output options based upon the number in Board[y][x].
 	array<string, 3> output;
 	output[0] = "   |";
-	output[1] = "(#)|";
-	output[2] = "[_]|";
+	output[1] = " X |";
+	output[2] = " O |";
 	//Output the top of the board.
-	cout << endl << "             1   2   3   4   5   6   7        Player 1 = (*)";
-	cout << endl << "           |---------------------------|      Player 2 = [_]" << endl;
+	cout << endl << "             1   2   3   4   5   6   7        Player 1 = X";
+	cout << endl << "           |---------------------------|      Player 2 = O" << endl;
 	cout << "           |";
 
 	for (int y = 0; y < BOARD_HEIGHT; y++) {
