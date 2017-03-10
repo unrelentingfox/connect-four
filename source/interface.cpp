@@ -9,20 +9,26 @@
 int Interface::start() {
 	board = new Board();
 	char input;
-	int player = 0;
+	int player = 1;
 	bool error = false;
 
 	while (input != 'q') {
 		cout << endl << endl;
 		cout << "=------------------------------------------------------------=\n";
 		cout << "| Use the numbers (1-7) to drop a peice in one of the slots. |\n";
+		cout << "| Or enter (c) to let the computer make a move for you.      |\n";
 		cout << "|                  ___________________                       |\n";
-		cout << "| Quit (q)        | CURRENT PLAYER: " << player + 1 << " |        Reset Game(r) |\n";
+
+		if (player == -1)
+			cout << "| Quit (q)        | CURRENT PLAYER: O |        Reset Game(r) |\n";
+		else
+			cout << "| Quit (q)        | CURRENT PLAYER: X |        Reset Game(r) |\n";
+
 		cout << "=------------------------------------------------------------=\n";
 		board->print(error);
 		error = false;
 		cout << "=------------------------------------------------------------***\n";
-		cout << "PLAYER " << player + 1 << ": ";
+		cout << "PLAYER " << player << ": ";
 		cin >> input;
 
 		switch (input) {
@@ -31,36 +37,47 @@ int Interface::start() {
 			break;
 
 		case 'r':
+			delete board;
 			board = new Board();
 			break;
 
+		case 'c':
+			board->computerMove(player);
+			break;
+
 		case '1':
-			if (!board->move(player + 1, 0)) error = true;
+			if (!board->move(player, 0)) error = true;
 
 			break;
 
 		case '2':
-			if (!board->move(player + 1, 1)) error = true;
+			if (!board->move(player, 1)) error = true;
+
 			break;
 
 		case '3':
-			if (!board->move(player + 1, 2)) error = true;
+			if (!board->move(player, 2)) error = true;
+
 			break;
 
 		case '4':
-			if (!board->move(player + 1, 3)) error = true;
+			if (!board->move(player, 3)) error = true;
+
 			break;
 
 		case '5':
-			if (!board->move(player + 1, 4)) error = true;
+			if (!board->move(player, 4)) error = true;
+
 			break;
 
 		case '6':
-			if (!board->move(player + 1, 5)) error = true;
+			if (!board->move(player, 5)) error = true;
+
 			break;
 
 		case '7':
-			if (!board->move(player + 1, 6)) error = true;
+			if (!board->move(player, 6)) error = true;
+
 			break;
 
 		default:
@@ -70,6 +87,6 @@ int Interface::start() {
 
 		//Switch players
 		if (error == false)
-			player ^= 1;
+			player *= -1;
 	}
 }

@@ -7,10 +7,12 @@
 #define BOARD_HEIGHT 6
 #define BOARD_WIDTH 7
 #define GOAL 4 //must be <= BOARD_WIDTH and BOARD_HEIGHT
-#define DIRECTIONS 8
+#define NUM_OF_DIRECTIONS 8
+#define DEPTH 4
 
 #include <iostream>
 #include <array>
+#include <unistd.h>
 #include <string>
 
 using namespace std;
@@ -29,15 +31,19 @@ class Board {
 	int moves;
 
 	//Search directions used in checkLastMoveForWin(int slot);
-	array<int, DIRECTIONS> SEARCH_X;
-	array<int, DIRECTIONS> SEARCH_Y;
+	array<int, NUM_OF_DIRECTIONS> SEARCH_X;
+	array<int, NUM_OF_DIRECTIONS> SEARCH_Y;
+	// array<string, NUM_OF_DIRECTIONS> DIRECTIONS;
 
-	int checkPieceForWin(int x, int y);
+	int checkWin(int x, int y);
+	int unMove(int slot);
+	int miniMax(int player, int move, int depth);
 
 public:
 
 	Board ();
 	int move(int player, int slot);
+	int computerMove(int player);
 	int getWinner();
 	int print(bool error = false);
 
