@@ -8,12 +8,14 @@
 #define BOARD_WIDTH 7
 #define GOAL 4 //must be <= BOARD_WIDTH and BOARD_HEIGHT
 #define NUM_OF_DIRECTIONS 8
-#define DEPTH 4
+#define DEPTH 3
 
 #include <iostream>
 #include <array>
 #include <unistd.h>
 #include <string>
+#include <algorithm>
+#include <climits>
 
 using namespace std;
 
@@ -27,6 +29,7 @@ class Board {
 	int board[BOARD_HEIGHT][BOARD_WIDTH];
 	//This integer value will be either 1 or 2 to signify the winner of the game.
 	int winner;
+	int winningMove;
 	//The total moves of the game.
 	int moves;
 
@@ -35,9 +38,9 @@ class Board {
 	array<int, NUM_OF_DIRECTIONS> SEARCH_Y;
 	// array<string, NUM_OF_DIRECTIONS> DIRECTIONS;
 
-	int checkWin(int x, int y);
+	int checkWin(int slot);
 	int unMove(int slot);
-	int miniMax(int player, int move, int depth);
+	int negaMax(int move, int depth, int player);
 
 public:
 
