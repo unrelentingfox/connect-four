@@ -8,7 +8,8 @@
  */
 Board::Board () {
 	winner = 0;
-	winningMove = 0;
+	winningMove = -1;
+	moves = 0;
 	SEARCH_Y = { 0, 0, -1, 1, -1, 1, -1, 1};
 	SEARCH_X = { -1, 1, 0, 0, 1, -1, -1, 1};
 	// DIRECTIONS = {"LEFT", "RIGHT", "UP", "DOWN", "UP-RIGHT", "DOWN-LEFT", "UP-LEFT", "DOWN-RIGHT"};
@@ -20,6 +21,27 @@ Board::Board () {
 	}
 }
 
+
+/**
+ * @brief      Checks if a move is valid.
+ *
+ * @param[in]  slot  The slot
+ *
+ * @return     returns 1 if the move is valid, 0 otherwise.
+ */
+int Board::moveIsValid(int move) {
+	//check if the move is within the bounds of the board.
+	if (move < 0 || move > BOARD_WIDTH)
+		return 0;
+
+	//check if the column is full or not.
+	if (board[0][move] == 0)
+		return 1;
+	else
+		return 0;
+}
+
+
 /**
  * @brief      Inserts a game peice into the given slot
  *
@@ -30,15 +52,11 @@ Board::Board () {
  *             unsuccessful (slot is full)
  */
 int Board::move(int player, int slot) {
-	//Don't allow moves after game over.
-	if (winner != 0)
+	if (!moveIsValid(slot) || winner != 0) {
 		return 0;
+	}
 
-	if (slot < 0 || slot > BOARD_WIDTH)
-		return 0;
-
-	//Iterate down the column until you reach the end or the top most game peice in the slot
-	int i;
+	int i = 0;
 
 	for (i = 0; i < BOARD_HEIGHT; i ++) {
 		if (board[i][slot] != 0)
@@ -50,15 +68,15 @@ int Board::move(int player, int slot) {
 		board[i][slot] = player;
 		moves++;
 
-		if (this->checkWin(slot) == INT_MAX) {
+		if (this->checkWin(slot) == WIN) {
 			winner = player;
 			winningMove = slot;
 		}
 
-		return 1;
+		// cout << this->checkWin(slot) << endl;
 	}
 
-	return 0;
+	return 1;
 }
 
 int Board::unMove(int slot) {
@@ -66,6 +84,7 @@ int Board::unMove(int slot) {
 
 	if (slot == winningMove) {
 		winner = 0;
+		winningMove = -1;
 	}
 
 	for (int i = 0; removed == 0 && i < BOARD_HEIGHT; i++) {
@@ -73,6 +92,10 @@ int Board::unMove(int slot) {
 			board[i][slot] = 0;
 			removed = 1;
 		}
+	}
+
+	if (removed) {
+		moves--;
 	}
 
 	return removed;
@@ -87,19 +110,23 @@ int Board::unMove(int slot) {
  * @return     { description_of_the_return_value }
  */
 int Board::computerMove(int player) {
+	if (winner != 0) {
+		return 0;
+	}
+
 	srand (time(NULL));
 	int bestMove = 4;
-	int bestScore = -100000;
-	int worstScore = 100000;
 	int currScore = 0;
-	array<int, 7> movesMax = {0, 0, 0, 0, 0, 0, 0};
-	array<int, 7> movesMin = {0, 0, 0, 0, 0, 0, 0};
+	int bestScore = INT_MIN;
+	int worstScore = INT_MAX;
+	array<int, 7> moveScores = {0, 0, 0, 0, 0, 0, 0};
+	vector<int> bestScoreMoves;
 
-	//MinMax Algorithm returns slot
+	//MinMax Algorithm returns scores for each possible move and records them in moveScores
 	for (int move = 0; move < BOARD_WIDTH; move++) {
-		if (this->move(player, move)) {
-			currScore = this->negaMax(move, 8, INT_MIN, INT_MAX, player) * player;
-			movesMax[move] = currScore;
+		if (this->moveIsValid(move)) {
+			currScore = this->negaMax(move, DEPTH, INT_MIN, INT_MAX, player, 0);
+			moveScores[move] = currScore;
 
 			if (currScore > bestScore) {
 				bestMove = move;
@@ -108,53 +135,61 @@ int Board::computerMove(int player) {
 			else if (currScore < worstScore) {
 				worstScore = currScore;
 			}
-
-			this->unMove(move);
 		}
 	}
 
-	cout << movesMax[0] << " " << movesMax[1] << " " << movesMax[2] << " " << movesMax[3] << " " << movesMax[4] << " " << movesMax[5] << " " <<
-	     movesMax[6] << endl;
-	cout << movesMin[0] << " " << movesMin[1] << " " << movesMin[2] << " " << movesMin[3] << " " << movesMin[4] << " " << movesMin[5] << " " <<
-	     movesMin[6] << endl;
+	//check to see if there are multiple moves with the best score
+	for (int i = 0; i < BOARD_WIDTH; i++) {
+		if (moveScores[i] == bestScore) {
+			bestScoreMoves.push_back(i);
+		}
+	}
+
+	cout << moveScores[0] << " " << moveScores[1] << " " << moveScores[2] << " " << moveScores[3] << " " << moveScores[4] << " " << moveScores[5] << " "
+	     <<
+	     moveScores[6] << endl;
 
 	//do a random move if all of the moves are the same.
-	if (bestScore == worstScore) {
+	if (bestScoreMoves.size() > 1) {
 		do {
-			bestMove = rand() % 7;
+			bestMove = rand() % bestScoreMoves.size();
 		}
-		while (!this->move(player, bestMove));
+		while (!this->move(player, bestScoreMoves[bestMove]));
 	}
 	else
-		this->move(player, bestMove);
+		this->move(player, bestScoreMoves[0]);
 
 	return 1;
 }
 
-int Board::negaMax(int move, int depth, int alpha, int beta, int player) {
-	int h = 0;
+int Board::negaMax(int move, int depth, int alpha, int beta, int player, int boardScore) {
+	//temporarily play the current move to create the state to analyze.
+	this->move(player, move);
+	//add the current state score to the total boardScore;
+	boardScore += this->checkWin(move);
 
-	if (depth == 0 ) {
-		return (checkWin(move) * player);
-	}else if (winner == true){
-		return checkWin(move);
+	//If we reach a leaf node or the maximum depth return the current boardScore
+	if (depth == 0  || winner != 0) {
+		this->unMove(move);
+		return boardScore;
 	}
 
-	int bestValue = INT_MIN;
+	//initially the best score is set to the worst score
+	int bestScore = INT_MIN;
 
 	for (int childMove = 0; childMove < BOARD_WIDTH; childMove++) {
-		if (this->move(player, childMove)) {
-			int v = negaMax(childMove, depth - 1, -beta, -alpha, player * -1)
-			bestValue = max(bestValue, v);
-			alpha = max(bestValue, v);
-			this->unMove(childMove);
+		if (this->moveIsValid(childMove)) {
+			int v = negaMax(childMove, depth - 1, beta * -1, alpha * -1, player * -1, boardScore * -1);
+			bestScore = max(bestScore, v);
+			alpha = max(bestScore, v);
 
 			if (alpha >= beta)
 				break;
 		}
 	}
 
-	return bestValue;
+	this->unMove(move);
+	return bestScore * -1;
 }
 
 
@@ -224,7 +259,7 @@ int Board::checkWin(int slot) {
 
 			//check for win or inteerference by other player's peice.
 			if (count >= 4) {
-				return INT_MAX;
+				return WIN;
 			}
 			else if (interference) {
 				count = 1;
@@ -262,7 +297,7 @@ int Board::checkWin(int slot) {
 
 			//check for win or inteerference by other player's peice.
 			if (count >= 4) {
-				return INT_MAX;
+				return WIN;
 			}
 			else if (interference) {
 				count = 1;

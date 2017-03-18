@@ -8,7 +8,9 @@
 #define BOARD_WIDTH 7
 #define GOAL 4 //must be <= BOARD_WIDTH and BOARD_HEIGHT
 #define NUM_OF_DIRECTIONS 8
-#define DEPTH 3
+#define DEPTH 8
+#define WIN 10000000
+#define LOSS -10000000;
 
 #include <iostream>
 #include <array>
@@ -43,12 +45,13 @@ class Board {
 
 	int checkWin(int slot);
 	int unMove(int slot);
-	int negaMax(int move, int depth, int alpha, int beta, int player);
+	int negaMax(int move, int depth, int alpha, int beta, int player, int boardScore);
 
 public:
 
 	Board ();
 	int move(int player, int slot);
+	int moveIsValid(int move);
 	int computerMove(int player);
 	int getWinner();
 	int print(bool error = false);
