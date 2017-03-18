@@ -16,6 +16,9 @@
 #include <string>
 #include <algorithm>
 #include <climits>
+#include <stdlib.h>
+#include <time.h>
+#include <list>
 
 using namespace std;
 
@@ -40,7 +43,7 @@ class Board {
 
 	int checkWin(int slot);
 	int unMove(int slot);
-	int negaMax(int move, int depth, int player);
+	int negaMax(int move, int depth, int alpha, int beta, int player);
 
 public:
 

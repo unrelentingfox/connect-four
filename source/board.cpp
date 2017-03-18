@@ -50,7 +50,7 @@ int Board::move(int player, int slot) {
 		board[i][slot] = player;
 		moves++;
 
-		if (this->checkWin(slot) == 10000) {
+		if (this->checkWin(slot) == INT_MAX) {
 			winner = player;
 			winningMove = slot;
 		}
@@ -87,45 +87,70 @@ int Board::unMove(int slot) {
  * @return     { description_of_the_return_value }
  */
 int Board::computerMove(int player) {
-	int bestMove = -1;
+	srand (time(NULL));
+	int bestMove = 4;
 	int bestScore = -100000;
+	int worstScore = 100000;
 	int currScore = 0;
-	array<int, 7> moves = {0, 0, 0, 0, 0, 0, 0};
+	array<int, 7> movesMax = {0, 0, 0, 0, 0, 0, 0};
+	array<int, 7> movesMin = {0, 0, 0, 0, 0, 0, 0};
 
 	//MinMax Algorithm returns slot
 	for (int move = 0; move < BOARD_WIDTH; move++) {
 		if (this->move(player, move)) {
-			if ((currScore = this->negaMax(move, 6, 1)) > bestScore) {
-				moves[move] = currScore;
+			currScore = this->negaMax(move, 8, INT_MIN, INT_MAX, player) * player;
+			movesMax[move] = currScore;
+
+			if (currScore > bestScore) {
 				bestMove = move;
 				bestScore = currScore;
+			}
+			else if (currScore < worstScore) {
+				worstScore = currScore;
 			}
 
 			this->unMove(move);
 		}
 	}
 
-	cout << moves[0] << " " << moves[1] << " " << moves[2] << " " << moves[3] << " " << moves[4] << " " << moves[5] << " " << moves[6] << endl;
-	this->move(player, bestMove);
+	cout << movesMax[0] << " " << movesMax[1] << " " << movesMax[2] << " " << movesMax[3] << " " << movesMax[4] << " " << movesMax[5] << " " <<
+	     movesMax[6] << endl;
+	cout << movesMin[0] << " " << movesMin[1] << " " << movesMin[2] << " " << movesMin[3] << " " << movesMin[4] << " " << movesMin[5] << " " <<
+	     movesMin[6] << endl;
+
+	//do a random move if all of the moves are the same.
+	if (bestScore == worstScore) {
+		do {
+			bestMove = rand() % 7;
+		}
+		while (!this->move(player, bestMove));
+	}
+	else
+		this->move(player, bestMove);
+
 	return 1;
 }
 
-int Board::negaMax(int move, int depth, int player) {
+int Board::negaMax(int move, int depth, int alpha, int beta, int player) {
 	int h = 0;
 
-	if (depth == 0 || (h = checkWin(move)) >= 10000) {
-		return (h * player);
+	if (depth == 0 ) {
+		return (checkWin(move) * player);
+	}else if (winner == true){
+		return checkWin(move);
 	}
 
-	// childNodes := GenerateMoves(node)
-	// childNodes := OrderMoves(childNodes)
 	int bestValue = INT_MIN;
 
 	for (int childMove = 0; childMove < BOARD_WIDTH; childMove++) {
 		if (this->move(player, childMove)) {
-			int v = -negaMax(childMove, depth - 1, -player);
+			int v = negaMax(childMove, depth - 1, -beta, -alpha, player * -1)
 			bestValue = max(bestValue, v);
+			alpha = max(bestValue, v);
 			this->unMove(childMove);
+
+			if (alpha >= beta)
+				break;
 		}
 	}
 
@@ -199,7 +224,7 @@ int Board::checkWin(int slot) {
 
 			//check for win or inteerference by other player's peice.
 			if (count >= 4) {
-				return 10000;
+				return INT_MAX;
 			}
 			else if (interference) {
 				count = 1;
@@ -237,7 +262,7 @@ int Board::checkWin(int slot) {
 
 			//check for win or inteerference by other player's peice.
 			if (count >= 4) {
-				return 10000;
+				return INT_MAX;
 			}
 			else if (interference) {
 				count = 1;
@@ -246,6 +271,9 @@ int Board::checkWin(int slot) {
 			//Set the maximum count for this axis.
 			if (count > countMax) {
 				countMax = count;
+				verticalHeightOfMax = verticalHeight;
+			}
+			else if (count == countMax && verticalHeight < verticalHeightOfMax) {
 				verticalHeightOfMax = verticalHeight;
 			}
 
@@ -258,13 +286,13 @@ int Board::checkWin(int slot) {
 
 		//Add to the score
 		if (countMax == 3) {
-			score += 100 - (10 * verticalHeightOfMax);
+			score += 1000 - (100 * verticalHeightOfMax);
 		}
 		else if (countMax == 2) {
-			score += 10 - verticalHeightOfMax;
+			score += 100 - (10 * verticalHeightOfMax);
 		}
-		else if (countMax == 1) {
-			score += 1;
+		else {
+			score += 1 - verticalHeightOfMax;
 		}
 
 		countMax = 1;
