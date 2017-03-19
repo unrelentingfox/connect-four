@@ -189,8 +189,8 @@ int Board::negaMax(int move, int depth, int alpha, int beta, int player, int boa
 	}
 
 	this->unMove(move);
-	//negate the best score before returning it and -10 for each depth level.
-	return (bestScore * -1) - 10;
+	//negate the best score before returning it and -10000 for each depth level to ensure that the priority goes to closer wins.
+	return (bestScore * -1) - 10000;
 }
 
 
@@ -322,13 +322,13 @@ int Board::checkWin(int slot) {
 
 		//Add to the score
 		if (countMax == 3) {
-			score += 100000 - (10 * verticalHeightOfMax);
+			score += 100000 - (verticalHeightOfMax);
 		}
 		else if (countMax == 2) {
-			score += 10000 - (10 * verticalHeightOfMax);
+			score += 10000 - (verticalHeightOfMax);
 		}
 		else {
-			score += 100 - (10 * verticalHeightOfMax);
+			score += 100 - (verticalHeightOfMax);
 		}
 
 		countMax = 1;
